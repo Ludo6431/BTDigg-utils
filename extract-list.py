@@ -35,6 +35,9 @@ class BtDiggTop100Entry:
     fakecount = -1
     name = ""
     
+    def __str__(self):
+        return "[rk=" + str(self.rank) + " ; dlcnt=" + str(self.dlcount) + " ; size=" + str(self.size) + " ; filecnt=" + str(self.filecount) + " ; fakecnt=" + str(self.fakecount) + " ; name=" + str(self.name) + "]"
+    
 class BtDiggTop100Parser(HTMLParser):
     state = ParseState.Unknown
     verbose = 0
@@ -44,7 +47,7 @@ class BtDiggTop100Parser(HTMLParser):
         pass
 
     def handle_starttag(self, tag, attrs):
-        if self.verbose > 1:
+        if self.verbose > 2:
             print("Encountered a start tag:", tag)
         
         if self.state == ParseState.Unknown and tag == "table":
@@ -65,44 +68,58 @@ class BtDiggTop100Parser(HTMLParser):
             self.state = ParseState.Unknown
 
     def handle_endtag(self, tag):
-        if self.verbose > 1:
+        if self.verbose > 2:
             print("Encountered an end tag :", tag)
 
         if self.state == ParseState.Row and tag == "table":
             self.state = ParseState.Unknown
 
     def handle_data(self, data):
-        if self.verbose > 1:
+        if self.verbose > 2:
             print("Encountered some data  :", data)
 
         if self.state == ParseState.Init_StartB and data == "#":
             self.state = ParseState.Init_Header
         elif self.state == ParseState.Row:
-            print("rank     :", data)
+            if self.verbose > 1:
+                print("rank     :", data)
             self.curr_entry.rank = int(data)
             self.state = ParseState.Row_DLCount
         elif self.state == ParseState.Row_DLCount:
-            print("dlcount  :", data)
+            if self.verbose > 1:
+                print("dlcount  :", data)
             self.curr_entry.dlcount = int(data)
             self.state = ParseState.Row_Size1
         elif self.state == ParseState.Row_Size1:
-            print("size1    :", data)
+            if self.verbose > 1:
+                print("size1    :", data)
             self.curr_entry.size = float(data)
             self.state = ParseState.Row_Size2
         elif self.state == ParseState.Row_Size2:
-            print("size2    :", data)
-#             self.curr_entry.size = data    FIXME implement multiplier
+            if self.verbose > 1:
+                print("size2    :", data)
+            if data == "KB":
+                self.curr_entry.size = self.curr_entry.size * 1000
+            elif data == "MB":
+                self.curr_entry.size = self.curr_entry.size * 1000 * 1000
+            elif data == "GB":
+                self.curr_entry.size = self.curr_entry.size * 1000 * 1000 * 1000
+            elif data == "TB":
+                self.curr_entry.size = self.curr_entry.size * 1000 * 1000 * 1000 * 1000
             self.state = ParseState.Row_FileCount
         elif self.state == ParseState.Row_FileCount:
-            print("filecount:", data)
+            if self.verbose > 1:
+                print("filecount:", data)
             self.curr_entry.filecount = int(data)
             self.state = ParseState.Row_FakeCount
         elif self.state == ParseState.Row_FakeCount:
-            print("fakecount:", data)
+            if self.verbose > 1:
+                print("fakecount:", data)
             self.curr_entry.fakecount = data
             self.state = ParseState.Row_Name
         elif self.state == ParseState.Row_Name:
-            print("name     :", data)
+            if self.verbose > 1:
+                print("name     :", data)
             self.curr_entry.name = data
             print("entry:", self.curr_entry)
             self.curr_entry = BtDiggTop100Entry()
