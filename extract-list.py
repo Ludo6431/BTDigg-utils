@@ -34,14 +34,16 @@ class BtDiggTop100Entry:
     filecount = -1
     fakecount = -1
     name = ""
+    url = ""
     
     def __str__(self):
-        return "[rk=" + str(self.rank) + " ; dlcnt=" + str(self.dlcount) + " ; size=" + str(self.size) + " ; filecnt=" + str(self.filecount) + " ; fakecnt=" + str(self.fakecount) + " ; name=" + str(self.name) + "]"
+        return "[rk=" + str(self.rank) + " ; dlcnt=" + str(self.dlcount) + " ; size=" + str(self.size) + " ; filecnt=" + str(self.filecount) + " ; fakecnt=" + str(self.fakecount) + " ; name=" + str(self.name) + " ; url=" + str(self.url) + "]"
     
 class BtDiggTop100Parser(HTMLParser):
     state = ParseState.Unknown
     verbose = 0
     curr_entry = None
+    url_prefix = "http://btdigg.org"
 
     def handle_row(self, r):
         pass
@@ -63,7 +65,12 @@ class BtDiggTop100Parser(HTMLParser):
                 self.curr_entry = BtDiggTop100Entry()
                 self.state = ParseState.Row
         elif ParseState.isParsingRow(self.state):
-            pass
+            if self.state == ParseState.Row_Name and tag == "a":
+                d = dict(attrs)
+                url = self.url_prefix + d["href"]
+                if self.verbose > 1:
+                    print("url      :", url)
+                self.curr_entry.url = url
         else:
             self.state = ParseState.Unknown
 
