@@ -16,15 +16,14 @@ class ParseState(Enum):
     Init_Header = 6
     Row = 7
     Row_DLCount = 8
-    Row_Size1 = 9
-    Row_Size2 = 10
-    Row_FileCount = 11
-    Row_FakeCount = 12
-    Row_Name = 13
+    Row_Size = 9
+    Row_FileCount = 10
+    Row_FakeCount = 11
+    Row_Name = 12
     
     @staticmethod
     def isParsingRow(s):
-        if s == ParseState.Row or s == ParseState.Row_DLCount or s == ParseState.Row_Size1 or s == ParseState.Row_Size2 or s == ParseState.Row_FileCount or s == ParseState.Row_FakeCount or s == ParseState.Row_Name:
+        if s == ParseState.Row or s == ParseState.Row_DLCount or s == ParseState.Row_Size or s == ParseState.Row_FileCount or s == ParseState.Row_FakeCount or s == ParseState.Row_Name:
             return 1
         return 0
 
@@ -54,8 +53,8 @@ class BtDiggTop100Parser(HTMLParser):
     verbose = 0
     curr_entry = None
 
-#     def __init__(self):
-#         HTMLParser.__init__(self, convert_charrefs=True)
+    def __init__(self):
+        HTMLParser.__init__(self, convert_charrefs=True)
 
     def handle_row(self, e):
         pass
@@ -112,24 +111,21 @@ class BtDiggTop100Parser(HTMLParser):
                 print("dlcount  :", data)
                 
             self.curr_entry.dlcount = int(data)
-            self.state = ParseState.Row_Size1
-        elif self.state == ParseState.Row_Size1:
+            self.state = ParseState.Row_Size
+        elif self.state == ParseState.Row_Size:
             if self.verbose > 2:
-                print("size1    :", data)
-                
-            self.curr_entry.size = float(data)
-            self.state = ParseState.Row_Size2
-        elif self.state == ParseState.Row_Size2:
-            if self.verbose > 2:
-                print("size2    :", data)
-                
-            if data == "KB":
+                print("size    :", data)
+            
+            (sz, ml) = data.split('\xa0') # &nbsp;
+            
+            self.curr_entry.size = float(sz)
+            if ml == "KB":
                 self.curr_entry.size = self.curr_entry.size * 1000
-            elif data == "MB":
+            elif ml == "MB":
                 self.curr_entry.size = self.curr_entry.size * 1000 * 1000
-            elif data == "GB":
+            elif ml == "GB":
                 self.curr_entry.size = self.curr_entry.size * 1000 * 1000 * 1000
-            elif data == "TB":
+            elif ml == "TB":
                 self.curr_entry.size = self.curr_entry.size * 1000 * 1000 * 1000 * 1000
             self.state = ParseState.Row_FileCount
         elif self.state == ParseState.Row_FileCount:
