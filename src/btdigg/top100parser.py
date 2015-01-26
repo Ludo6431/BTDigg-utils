@@ -23,7 +23,8 @@ class ParseState(Enum):
     Row_FakeCount = 12
     Row_Name = 13
     
-    def isParsingRow(self, s):
+    @staticmethod
+    def isParsingRow(s):
         if s == ParseState.Row or s == ParseState.Row_DLCount or s == ParseState.Row_Size1 or s == ParseState.Row_Size2 or s == ParseState.Row_FileCount or s == ParseState.Row_FakeCount or s == ParseState.Row_Name:
             return 1
         return 0
