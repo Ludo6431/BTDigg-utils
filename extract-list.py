@@ -56,10 +56,10 @@ class BtDiggTop100Parser(HTMLParser):
     curr_entry = None
 
     def handle_row(self, e):
-        print("magnet:", e.to_magnet())
+        pass
 
     def handle_starttag(self, tag, attrs):
-        if self.verbose > 2:
+        if self.verbose > 3:
             print("Encountered a start tag:", tag)
         
         if self.state == ParseState.Unknown and tag == "table":
@@ -79,7 +79,7 @@ class BtDiggTop100Parser(HTMLParser):
                 d = dict(attrs)
                 url = BtDiggTop100Entry.url + d["href"]
                 
-                if self.verbose > 1:
+                if self.verbose > 2:
                     print("url      :", url)
                     
                 self.curr_entry.url = url
@@ -87,38 +87,38 @@ class BtDiggTop100Parser(HTMLParser):
             self.state = ParseState.Unknown
 
     def handle_endtag(self, tag):
-        if self.verbose > 2:
+        if self.verbose > 3:
             print("Encountered an end tag :", tag)
 
         if self.state == ParseState.Row and tag == "table":
             self.state = ParseState.Unknown
 
     def handle_data(self, data):
-        if self.verbose > 2:
+        if self.verbose > 3:
             print("Encountered some data  :", data)
 
         if self.state == ParseState.Init_StartB and data == "#":
             self.state = ParseState.Init_Header
         elif self.state == ParseState.Row:
-            if self.verbose > 1:
+            if self.verbose > 2:
                 print("rank     :", data)
                 
             self.curr_entry.rank = int(data)
             self.state = ParseState.Row_DLCount
         elif self.state == ParseState.Row_DLCount:
-            if self.verbose > 1:
+            if self.verbose > 2:
                 print("dlcount  :", data)
                 
             self.curr_entry.dlcount = int(data)
             self.state = ParseState.Row_Size1
         elif self.state == ParseState.Row_Size1:
-            if self.verbose > 1:
+            if self.verbose > 2:
                 print("size1    :", data)
                 
             self.curr_entry.size = float(data)
             self.state = ParseState.Row_Size2
         elif self.state == ParseState.Row_Size2:
-            if self.verbose > 1:
+            if self.verbose > 2:
                 print("size2    :", data)
                 
             if data == "KB":
@@ -131,31 +131,33 @@ class BtDiggTop100Parser(HTMLParser):
                 self.curr_entry.size = self.curr_entry.size * 1000 * 1000 * 1000 * 1000
             self.state = ParseState.Row_FileCount
         elif self.state == ParseState.Row_FileCount:
-            if self.verbose > 1:
+            if self.verbose > 2:
                 print("filecount:", data)
                 
             self.curr_entry.filecount = int(data)
             self.state = ParseState.Row_FakeCount
         elif self.state == ParseState.Row_FakeCount:
-            if self.verbose > 1:
+            if self.verbose > 2:
                 print("fakecount:", data)
                 
             self.curr_entry.fakecount = data
             self.state = ParseState.Row_Name
         elif self.state == ParseState.Row_Name:
-            if self.verbose > 1:
+            if self.verbose > 2:
                 print("name     :", data)
                 
             self.curr_entry.name = data
-            print("entry:", self.curr_entry)
+            if self.verbose > 1:
+                print("entry:", self.curr_entry)
             self.handle_row(self.curr_entry)
             self.curr_entry = BtDiggTop100Entry()
             self.state = ParseState.Row
 
+class BtDiggTop100Diff(BtDiggTop100Parser):
+    def handle_row(self, e):
+        print(e)
+        
 html = urlopen("http://btdigg.org/top100.html")
 html = str(html.read())
-
-# print('html=', html)
-
-parser = BtDiggTop100Parser()
+parser = BtDiggTop100Diff()
 parser.feed(html)
