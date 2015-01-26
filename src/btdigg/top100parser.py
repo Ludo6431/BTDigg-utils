@@ -4,9 +4,8 @@
 
 from enum import Enum
 from html.parser import HTMLParser
-from urllib.request import urlopen
 from re import compile
-from cgi import escape
+from urllib.request import urlopen
 
 class ParseState(Enum):
     Unknown = 0
@@ -24,7 +23,7 @@ class ParseState(Enum):
     Row_FakeCount = 12
     Row_Name = 13
     
-    def isParsingRow(s):
+    def isParsingRow(self, s):
         if s == ParseState.Row or s == ParseState.Row_DLCount or s == ParseState.Row_Size1 or s == ParseState.Row_Size2 or s == ParseState.Row_FileCount or s == ParseState.Row_FakeCount or s == ParseState.Row_Name:
             return 1
         return 0
@@ -43,8 +42,8 @@ class BtDiggTop100Entry:
             " ; url=" +     str(self.url) + "]"
     
     def to_magnet(self):
-        hash = get_hash()
-        return "magnet:?xt=urn:btih:" + hash # + "&dn=" + escape(self.name) FIXME add escaped name
+        h = self.get_hash()
+        return "magnet:?xt=urn:btih:" + h # + "&dn=" + escape(self.name) FIXME add escaped name
 
     def get_hash(self):
         p = BtDiggTop100Entry.hash_extractor.search(self.url)
@@ -153,11 +152,12 @@ class BtDiggTop100Parser(HTMLParser):
             self.curr_entry = BtDiggTop100Entry()
             self.state = ParseState.Row
 
-class BtDiggTop100Diff(BtDiggTop100Parser):
-    def handle_row(self, e):
-        print(e)
-        
-html = urlopen("http://btdigg.org/top100.html")
-html = str(html.read())
-parser = BtDiggTop100Diff()
-parser.feed(html)
+if __name__ == "__main__":
+    class BtDiggTop100Diff(BtDiggTop100Parser):
+        def handle_row(self, e):
+            print(e)
+            
+    html = urlopen("http://btdigg.org/top100.html")
+    html = str(html.read())
+    parser = BtDiggTop100Diff()
+    parser.feed(html)
