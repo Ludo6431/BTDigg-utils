@@ -54,6 +54,9 @@ class BtDiggTop100Parser(HTMLParser):
     verbose = 0
     curr_entry = None
 
+#     def __init__(self):
+#         HTMLParser.__init__(self, convert_charrefs=True)
+
     def handle_row(self, e):
         pass
 
