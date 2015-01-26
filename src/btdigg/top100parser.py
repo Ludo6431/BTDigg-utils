@@ -5,7 +5,6 @@
 from enum import Enum
 from html.parser import HTMLParser
 from re import compile
-from urllib.request import urlopen
 
 class ParseState(Enum):
     Unknown = 0
@@ -154,11 +153,13 @@ class BtDiggTop100Parser(HTMLParser):
             self.state = ParseState.Row
 
 if __name__ == "__main__":
-    class BtDiggTop100Diff(BtDiggTop100Parser):
+    from urllib.request import urlopen
+
+    class BtDiggTop100Print(BtDiggTop100Parser):
         def handle_row(self, e):
             print(e)
             
     html = urlopen("http://btdigg.org/top100.html")
     html = str(html.read())
-    parser = BtDiggTop100Diff()
+    parser = BtDiggTop100Print()
     parser.feed(html)
