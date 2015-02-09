@@ -1,3 +1,7 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+# script by Ludovic Lacoste <ludolacost@gmail.com>
+
 '''
 Created on 27 janv. 2015
 
